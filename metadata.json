@@ -1,0 +1,6 @@
+{
+  "name": "BEES Desafios - Apuração Comercial Ambev",
+  "description": "Sistema analítico para apuração de faturamento e metas de desafios comerciais BEES no formato CDD.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
