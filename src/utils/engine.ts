@@ -26,31 +26,183 @@ export const COLUNAS_OBRIGATORIAS_CDD = [
   "Situação NF",
 ];
 
+export function removerAcentos(str: string): string {
+  return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+export function sanitizarMojibake(str: string): string {
+  return str
+    .replace(/Ã¡/g, "á")
+    .replace(/Ã /g, "à")
+    .replace(/Ã¢/g, "â")
+    .replace(/Ã£/g, "ã")
+    .replace(/Ã©/g, "é")
+    .replace(/Ãª/g, "ê")
+    .replace(/Ã­/g, "í")
+    .replace(/Ã³/g, "ó")
+    .replace(/Ã´/g, "ô")
+    .replace(/Ãµ/g, "õ")
+    .replace(/Ãº/g, "ú")
+    .replace(/Ã§/g, "ç")
+    .replace(/Ã/g, "Á")
+    .replace(/Ã€/g, "À")
+    .replace(/Ã‚/g, "Â")
+    .replace(/Ãƒ/g, "Ã")
+    .replace(/Ã‰/g, "É")
+    .replace(/ÃŠ/g, "Ê")
+    .replace(/Ã“/g, "Ó")
+    .replace(/Ã”/g, "Ô")
+    .replace(/Ã•/g, "Õ")
+    .replace(/Ãš/g, "Ú")
+    .replace(/Ã‡/g, "Ç");
+}
+
+export function normalizarChave(str: string): string {
+  return removerAcentos(sanitizarMojibake(str.toLowerCase()))
+    .replace(/[^a-z0-9]/g, "")
+    .trim();
+}
+
 const MAPEAMENTOS_ALIAS: Record<string, string[]> = {
-  idPedido: ["Número pedido cliente", "Numero pedido cliente", "ID Pedido", "Num Pedido", "Pedido"],
-  dataEntrada: ["Data entrada", "Data Entrada", "Data de criação", "Data de criacao", "Data"],
-  descOperacao: ["Desc. operação", "Desc. operacao", "Free Good/ Bonificação", "Free Good/ Bonificacao", "Operação", "Tipo Operacao"],
-  codProduto: ["Cód. produto", "Cod. produto", "Itens/Sku", "SKU", "Sku", "Cód. Produto", "Codigo Produto"],
-  descProduto: ["Desc. produto", "Desc. Produto", "Descrição", "Descricao", "Nome Produto"],
-  quantVenda: ["Quant. venda", "Quant. Venda", "Quant. Item", "Qtd", "Quantidade", "Quant"],
-  canalOrigem: ["Canal origem", "Canal Origem", "Canal", "Origem"],
-  valorSemAdf: ["Valor sem ADF", "Valor Sem ADF", "Valor total", "Valor Total", "Valor Líquido", "Valor"],
-  situacaoPedido: ["Situação pedido", "Situacao pedido", "Status Pedido", "Situação Pedido"],
-  situacaoItem: ["Situação item", "Situacao item", "Status Item", "Situação Item"],
-  situacaoNf: ["Situação NF", "Situacao NF", "Status NF", "Situação Nf"],
+  idPedido: [
+    "Número pedido cliente",
+    "Numero pedido cliente",
+    "ID Pedido",
+    "Num Pedido",
+    "Pedido",
+    "Número pedido",
+    "Numero pedido",
+    "Num. pedido",
+  ],
+  dataEntrada: [
+    "Data entrada",
+    "Data Entrada",
+    "Data de criação",
+    "Data de criacao",
+    "Data",
+    "Data entrega",
+  ],
+  descOperacao: [
+    "Desc. operação",
+    "Desc. operacao",
+    "Desc operacao",
+    "Operação",
+    "Operacao",
+    "Tipo Operacao",
+    "Free Good/ Bonificação",
+    "Free Good/ Bonificacao",
+    "Desc. tipo movimento",
+  ],
+  codProduto: [
+    "Cód. produto",
+    "Cod. produto",
+    "Cod produto",
+    "Cód produto",
+    "Itens/Sku",
+    "SKU",
+    "Sku",
+    "Cód. Produto",
+    "Codigo Produto",
+    "Código produto",
+  ],
+  descProduto: [
+    "Desc. produto",
+    "Desc. Produto",
+    "Desc produto",
+    "Descrição",
+    "Descricao",
+    "Nome Produto",
+  ],
+  quantVenda: [
+    "Quant. venda",
+    "Quant. Venda",
+    "Quant venda",
+    "Quant. Item",
+    "Qtd",
+    "Quantidade",
+    "Quant",
+  ],
+  canalOrigem: [
+    "Canal origem",
+    "Canal Origem",
+    "Canal",
+    "Origem",
+    "Tipo canal origem",
+  ],
+  valorSemAdf: [
+    "Valor sem ADF",
+    "Valor Sem ADF",
+    "Valor sem adf",
+    "Valor líquido item",
+    "Valor liquido item",
+    "Valor total",
+    "Valor Total",
+    "Valor Líquido",
+    "Valor",
+  ],
+  situacaoPedido: [
+    "Situação pedido",
+    "Situacao pedido",
+    "Situacao Pedido",
+    "Status Pedido",
+    "Situação Pedido",
+    "Situação atend. pedido",
+  ],
+  situacaoItem: [
+    "Situação item",
+    "Situacao item",
+    "Situacao Item",
+    "Status Item",
+    "Situação Item",
+    "Situação atend. item",
+  ],
+  situacaoNf: [
+    "Situação NF",
+    "Situacao NF",
+    "Status NF",
+    "Situação Nf",
+    "Situacao Nf",
+    "Situação da NF",
+  ],
 };
 
 function resolverColuna(objeto: Record<string, any>, aliases: string[]): string | undefined {
   const chaves = Object.keys(objeto);
+
+  // 1. Tenta correspondência exata ou case-insensitive
   for (const alias of aliases) {
-    const chaveEncontrada = chaves.find((c) => c.trim().toLowerCase() === alias.trim().toLowerCase());
+    const chaveEncontrada = chaves.find(
+      (c) => c.trim().toLowerCase() === alias.trim().toLowerCase()
+    );
     if (chaveEncontrada) return chaveEncontrada;
   }
+
+  // 2. Tenta correspondência normalizada (sem acentos, sem pontuação, sem espaços)
+  const aliasesNorm = aliases.map(normalizarChave);
+  for (const chave of chaves) {
+    const chaveLimpa = limparBOM(chave).trim();
+    const chaveNorm = normalizarChave(chaveLimpa);
+    if (aliasesNorm.includes(chaveNorm)) {
+      return chave;
+    }
+  }
+
+  // 3. Tenta inclusão parcial caso o nome da coluna contenha o alias
+  for (const alias of aliases) {
+    const aliasNorm = normalizarChave(alias);
+    if (aliasNorm.length < 5) continue;
+    const chaveParcial = chaves.find((c) => {
+      const cNorm = normalizarChave(limparBOM(c));
+      return cNorm.includes(aliasNorm) || aliasNorm.includes(cNorm);
+    });
+    if (chaveParcial) return chaveParcial;
+  }
+
   return undefined;
 }
 
 export function limparBOM(texto: string): string {
-  return texto.charCodeAt(0) === 0xfeff ? texto.slice(1) : texto;
+  return texto.replace(/^(\uFEFF|ï»¿|\uEFBB|\uBFBD)+/, "");
 }
 
 export function detectarDelimitador(primeiraLinha: string): string {
@@ -211,13 +363,29 @@ export async function lerArquivoGenerico(file: File): Promise<{
     };
   } else {
     const buffer = await file.arrayBuffer();
-    let texto = new TextDecoder("utf-8").decode(buffer);
+    let texto = "";
 
-    if (texto.includes("") || (!texto.includes("ç") && !texto.includes("ã") && buffer.byteLength > 1000)) {
+    // 1. Tenta decodificar como UTF-8 estrito primeiro
+    try {
+      texto = new TextDecoder("utf-8", { fatal: true }).decode(buffer);
+    } catch {
+      // Se não for UTF-8 válido, tenta Windows-1252 / ISO-8859-1
       try {
         texto = new TextDecoder("windows-1252").decode(buffer);
       } catch {
-        // mantém UTF-8
+        texto = new TextDecoder("utf-8").decode(buffer);
+      }
+    }
+
+    // Se o texto tiver caractere de substituição (erro de UTF-8), tenta windows-1252
+    if (texto.includes("\uFFFD")) {
+      try {
+        const textoWin = new TextDecoder("windows-1252").decode(buffer);
+        if (!textoWin.includes("\uFFFD")) {
+          texto = textoWin;
+        }
+      } catch {
+        // mantém
       }
     }
 
@@ -232,7 +400,7 @@ export async function lerArquivoGenerico(file: File): Promise<{
       throw new Error("O arquivo CSV não contém linhas de dados válidas.");
     }
 
-    const cabecalho = linhas[0].map((h) => h.trim());
+    const cabecalho = linhas[0].map((h) => limparBOM(h).trim());
     const registros: Record<string, any>[] = [];
 
     for (let i = 1; i < linhas.length; i++) {
@@ -329,7 +497,10 @@ export function processarDesafioBEES(
     { descricao: string; contagem: number; valorTotal: number }
   >();
 
-  const normalizarTexto = (val: any) => String(val || "").trim().toUpperCase();
+  const normalizarTexto = (val: any) =>
+    removerAcentos(sanitizarMojibake(String(val || "")))
+      .trim()
+      .toUpperCase();
 
   for (const reg of registros) {
     // 1. Situação pedido === ENTREGUE
